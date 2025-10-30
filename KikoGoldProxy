@@ -1,0 +1,30 @@
+import express from "express";
+import fetch from "node-fetch";
+import cors from "cors";
+
+const app = express();
+app.use(cors());
+
+// Puedes usar tu propia API_KEY si quieres (gratis en metals-api.com)
+const API_KEY = "41337a9c01848efcac7df71d2beb6859";
+const API_URL = `https://metals-api.com/api/latest?access_key=${API_KEY}&base=XAU&symbols=USD`;
+
+app.get("/gold", async (req, res) => {
+  try {
+    const response = await fetch(API_URL);
+    const data = await response.json();
+
+    if (data && data.rates && data.rates.USD) {
+      const goldPrice = Number(data.rates.USD).toFixed(2);
+      res.json({ goldPrice });
+    } else {
+      res.status(500).json({ error: "No se pudo obtener el precio del oro." });
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Error en el proxy del servidor." });
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`✅ Proxy KikoGoldAPI activo en puerto ${PORT}`));
